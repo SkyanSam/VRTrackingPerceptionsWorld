@@ -25,7 +25,7 @@ public class PlayerDebug : UdonSharpBehaviour
     {
         
         var trackingData = player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
-        Debug.Log($"VTRP|Update|{Print("position", trackingData.position)}|{Print("rotation", trackingData.rotation)}|ticks:{DateTime.Now.Ticks}");
+        Debug.Log($"VTRP|Update|{Print("position", trackingData.position)}|{Print("rotation", trackingData.rotation)}|ticks:{DateTime.UtcNow.Ticks}");
         
         
         //var l = player.GetTrackingData(VRCPlayerApi.TrackingDataType.)
