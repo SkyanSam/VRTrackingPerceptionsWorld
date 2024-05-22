@@ -7,43 +7,46 @@ using UnityEngine.Networking;
 using VRC.Core;
 using VRC.Udon.Wrapper.Modules;
 using System;
+using System.CodeDom;
 
 public class PlayerDebug : UdonSharpBehaviour
 {
+    public string participantDisplayName;
+    public string researcherDisplayName;
     VRCPlayerApi player;
+    VRCPlayerApi researcher = null;
     public TMPro.TextMeshPro textMeshPro;
-    void Start()
+    void UpdateVRCPlayerApis()
     {
         var players = new VRCPlayerApi[VRCPlayerApi.GetPlayerCount()];
         players = VRCPlayerApi.GetPlayers(players);
-        player = players[0];
+        foreach (var p in players) {
+            if (p.displayName == participantDisplayName)
+                player = p;
+            else if (p.displayName == researcherDisplayName)
+                researcher = p;
+        }
+    }
+    void Start()
+    {
+        UpdateVRCPlayerApis();
         Debug.Log($"VRTP|Start");
     }
+    
 
     // Update is called once per frame
     void Update()
     {
-        
-        var trackingData = player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
-        Debug.Log($"VTRP|Update|{Print("position", trackingData.position)}|{Print("rotation", trackingData.rotation)}|ticks:{DateTime.UtcNow.Ticks}");
-        
-        
-        //var l = player.GetTrackingData(VRCPlayerApi.TrackingDataType.)
-        /*
-        
-        var playerPosition = player.GetPosition();
-        var Leyeposition = player.GetBonePosition(HumanBodyBones.LeftEye);
-        var Leyerotation = player.GetBoneRotation(HumanBodyBones.LeftEye);
-        var Reyeposition = player.GetBonePosition(HumanBodyBones.RightEye);
-        var Reyerotation = player.GetBoneRotation(HumanBodyBones.RightEye);
+        UpdateVRCPlayerApis();
 
-        textMeshPro.text = player.displayName + "\n" + Print("Left", Leyerotation) + "\n" + Print("Right", Reyerotation);
-        var str = Print(nameof(playerPosition), playerPosition) +
-            Print(nameof(Leyeposition), Leyeposition) +
-            Print(nameof(Leyerotation), Leyerotation) +
-            Print(nameof(Reyeposition), Reyeposition) +
-            Print(nameof(Reyerotation), Reyerotation);
-        Debug.Log(str);*/
+        var trackingData = player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
+        var outputLine = $"VTRP|Update|{Print("position", trackingData.position)}|{Print("rotation", trackingData.rotation)}|ticks:{DateTime.UtcNow.Ticks}";
+        if (researcher != null)
+        {
+            var researcherTrackingData = researcher.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
+            outputLine += $"|{Print("rPosition", researcherTrackingData.position)}";
+        }
+        Debug.Log(outputLine);
     }
     public string Print(string name, Vector3 vec)
     {
@@ -51,6 +54,6 @@ public class PlayerDebug : UdonSharpBehaviour
     }
     public string Print(string name, Quaternion vec)
     {
-        return $"|{name}:{(int)vec.eulerAngles.x},{(int)vec.eulerAngles.y},{(int)vec.eulerAngles.z}|";
+        return $"|{name},{(int)vec.eulerAngles.x},{(int)vec.eulerAngles.y},{(int)vec.eulerAngles.z}|";
     }
 }
